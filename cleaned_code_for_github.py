@@ -18,6 +18,7 @@ files = glob.glob(os.path.join("data/*.csv"))
 
 df_list = []
 
+#datatype = {'sign_up_time': 'datetime', 'user_id': object, ... }
 
 for filename in files:
     df = pd.read_csv(filename, index_col=None, header=0,dtype=datatype,parse_dates=['sign_up_time'])
@@ -54,11 +55,11 @@ df.drop(['first_export_time_ios','first_corners_time_ios'],axis=1, inplace=True)
 
 
 # convert time columns into datetime datatype
-df['sign_up_time'] = pd.to_datetime(df['sign_up_time'], errors='coerce')
-df['first_project_time_ios'] = pd.to_datetime(df['first_project_time_ios'], errors='coerce')
-df['first_room_time_ios'] = pd.to_datetime(df['first_room_time_ios'], errors='coerce')
-df['first_camera_time_ios'] = pd.to_datetime(df['first_camera_time_ios'], errors='coerce')
-df['first_square_time_ios'] = pd.to_datetime(df['first_square_time_ios'], errors='coerce')
+df['sign_up_time'] = pd.to_datetime(df['sign_up_time'], errors='coerce', utc = True)
+df['first_project_time_ios'] = pd.to_datetime(df['first_project_time_ios'], errors='coerce', utc = True)
+df['first_room_time_ios'] = pd.to_datetime(df['first_room_time_ios'], errors='coerce', utc = True)
+df['first_camera_time_ios'] = pd.to_datetime(df['first_camera_time_ios'], errors='coerce', utc = True)
+df['first_square_time_ios'] = pd.to_datetime(df['first_square_time_ios'], errors='coerce', utc = True)
 
 
 # check the distribution of feature: combine value_counts and percentage
@@ -144,7 +145,8 @@ sns.heatmap(corr_matrix, annot=True, linewidths=.5)
 plt.show()
 
 
-# densitiy visualisation
+# densitiy visualisation to check distribution 
+# especially for large range
 sns.displot(df_unseen_balanced, x="room_method_camera_ios",hue='converted', kind = "kde")
 
 
@@ -290,5 +292,7 @@ save_model(tuned_model, 'tuned_model_file')
 
 # for later use just load the model
 saved_model = load_model('tuned_model_file')
+
 # adjust threshold
-predict_results = predict_model(saved_model, data = df_unseen_balanced,probability_threshold = 0.5)
+# raw_score default is False, shows scores for both labels
+predict_results = predict_model(saved_model, data = df_unseen_balanced, probability_threshold = 0.5, raw_score = True)
